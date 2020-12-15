@@ -7,6 +7,7 @@ import com.example.demo.Services.FoodService;
 import com.example.demo.Services.GeoService;
 import com.example.demo.Services.HotelService;
 import com.example.demo.Services.StatisticsService;
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,8 @@ import java.util.List;
 
 @RestController
 public class GatewayController {
+
+    private final Logger logger = Logger.getLogger(GatewayController.class);
 
     @Autowired
     HotelService hotelService;
@@ -33,11 +36,13 @@ public class GatewayController {
 
     @GetMapping("/{city}")
     public Response getRecommendations(@PathVariable String city) throws IOException, JSONException {
+        logger.info("/city GET getRecommendations called.");
         var hotels = hotelService.getHotelAddresses(city);
         service.sendObject(city);
         geoService.getHotelCoordinates(hotels);
         foodService.getRestaurants(hotels);
         Response response = new Response(hotelService.getHotelDTOs(hotels), statisticsService.getStatistics());
+        logger.info("/city GET successfully finished.");
         return response;
     }
 

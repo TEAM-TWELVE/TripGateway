@@ -19,9 +19,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.apache.log4j.Logger;
 @Service
 public class StatisticsService {
+
+    private final Logger logger = Logger.getLogger(StatisticsService.class);
 
     @Value("${StatisticsEndpointPort}")
     String statisticsEndpointPort;
@@ -29,18 +31,21 @@ public class StatisticsService {
 
 
     public List<City> getStatistics() throws IOException, JSONException {
-
+        logger.info("getStatistics called.");
         List<City> list = new ArrayList<>();
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-
+            logger.info("Successfully entered try block with CloseableHttpClient initialization.");
             HttpGet request = new HttpGet("http://localhost:" + statisticsEndpointPort);
+            logger.info("Created HttpGet instance.");
 
             try (CloseableHttpResponse response = client.execute(request)) {
-
+                logger.info("Successfully entered try block with CloseableHttpResponse initialization.");
                 HttpEntity entity = response.getEntity();
+                logger.info("HttpEntity initialized.");
 
                 if(entity != null) {
+                    logger.info("HttpEntity was NOT null.");
                     String result = EntityUtils.toString(entity);
                     JSONArray array = new JSONArray(result);
                     for (int i = 0; i < array.length(); i++) {
@@ -48,10 +53,16 @@ public class StatisticsService {
                         var name = json.getString("name");
                         var noOfSearches = json.getInt("noOfSearches");
                         list.add(new City(name, noOfSearches));
+                        logger.info("Added new City instance to List<City> return object.");
                     }
                 }
+            } catch (JSONException e) {
+                logger.error("Could not initialize CloseableHttpResponse.", e);
             }
+        } catch (IOException e) {
+            logger.error("Could not initialize CloseableHttpClient.", e);
         }
+        logger.info("Exiting getStatistics");
         return list;
     }
 }

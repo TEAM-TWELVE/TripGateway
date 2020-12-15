@@ -19,7 +19,9 @@ public class ProducerService {
 
     public void sendObject(String city)
     {
+        logger.info("sendObject called.");
         template.send(topic, city);
         template.flush();
+        logger.info("Exiting sendObject.");
     }
 }
